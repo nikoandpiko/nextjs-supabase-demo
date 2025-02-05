@@ -16,7 +16,7 @@ export default async function Home() {
           return cookieStore.getAll();
         },
         setAll(cookies) {
-          cookies.forEach(cookie => {
+          cookies.forEach((cookie) => {
             cookieStore.set(cookie.name, cookie.value, cookie.options);
           });
         },
