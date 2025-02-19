@@ -24,7 +24,7 @@ export default function DeleteButton({
     setIsDeleting(true);
     try {
       await supabase.from("posts").delete().eq("id", postId);
-      onDelete(postId);
+      onDelete(postId); // This triggers the toast in the parent component
       router.refresh();
     } catch (error) {
       console.error(error);

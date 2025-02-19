@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { usePosts } from "../context/PostContext";
+import Toast from "./Toast";
 
 const MAX_TITLE_LENGTH = 100;
 const MAX_CONTENT_LENGTH = 500;
@@ -11,7 +12,11 @@ export default function CreatePost() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [toast, setToast] = useState<{show: boolean, message: string, type: 'success'|'error'}>({
+    show: false,
+    message: "",
+    type: "success"
+  });
   const [errors, setErrors] = useState({ title: "", content: "" });
   const { addPost } = usePosts();
 
@@ -46,7 +51,7 @@ export default function CreatePost() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm() || isSubmitting) return;
   
     setIsSubmitting(true);
     try {
@@ -59,30 +64,50 @@ export default function CreatePost() {
       if (error) throw error;
       if (data) addPost(data);
   
+      // Reset the form and show success toast
       setTitle("");
       setContent("");
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+      setToast({
+        show: true,
+        message: "Post created successfully!",
+        type: "success"
+      });
     } catch (error: unknown) {
+      let errorMessage = "An unknown error occurred";
       if (error instanceof Error) {
+        errorMessage = error.message;
         console.error("Error:", error.message);
       } else if (typeof error === "object" && error !== null && "message" in error) {
-        console.error("Error:", (error as { message: string }).message);
+        errorMessage = (error as { message: string }).message;
+        console.error("Error:", errorMessage);
       } else {
-        console.error("An unknown error occurred");
+        console.error(errorMessage);
       }
+      
+      setToast({
+        show: true,
+        message: `Error: ${errorMessage}`,
+        type: "error"
+      });
     } finally {
       setIsSubmitting(false);
     }
-  }  
+  }
+  
+  function handleToastClose() {
+    setToast(prev => ({ ...prev, show: false }));
+  }
 
   return (
     <div className="relative">
-      {showSuccess && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-green-500 text-white rounded-lg shadow-lg z-50">
-          Post created successfully!
-        </div>
+      {toast.show && (
+        <Toast 
+          message={toast.message}
+          type={toast.type}
+          onClose={handleToastClose}
+        />
       )}
+      
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-lg shadow-sm p-6 mb-8"
@@ -106,7 +131,7 @@ export default function CreatePost() {
             placeholder="Post title"
             className={`w-full p-2 border rounded text-gray-800 placeholder-gray-400 ${
               errors.title ? "border-red-500" : ""
-            }`}
+            } ${isSubmitting ? "opacity-60 cursor-not-allowed" : ""}`}
             disabled={isSubmitting}
           />
           {errors.title && (
@@ -131,7 +156,7 @@ export default function CreatePost() {
             placeholder="Post content"
             className={`w-full p-2 border rounded h-32 min-h-[42] text-gray-800 placeholder-gray-400 ${
               errors.content ? "border-red-500" : ""
-            }`}
+            } ${isSubmitting ? "opacity-60 cursor-not-allowed" : ""}`}
             disabled={isSubmitting}
           />
           {errors.content && (

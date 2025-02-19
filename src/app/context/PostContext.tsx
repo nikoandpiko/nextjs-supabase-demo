@@ -12,6 +12,7 @@ interface PostContextType {
   posts: Post[];
   setPosts: (posts: Post[]) => void;
   addPost: (post: Post) => void;
+  updatePost: (id: number, updatedPost: Partial<Post>) => void;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -29,8 +30,16 @@ export function PostProvider({
     setPosts((prev) => [post, ...prev]);
   };
 
+  const updatePost = (id: number, updatedPost: Partial<Post>) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === id ? { ...post, ...updatedPost } : post
+      )
+    );
+  };
+
   return (
-    <PostContext.Provider value={{ posts, setPosts, addPost }}>
+    <PostContext.Provider value={{ posts, setPosts, addPost, updatePost }}>
       {children}
     </PostContext.Provider>
   );
