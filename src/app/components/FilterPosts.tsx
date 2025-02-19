@@ -150,14 +150,16 @@ export default function FilterPosts() {
             return (
               <article
                 key={post.id}
-                className="bg-white rounded-lg shadow-sm p-6 transition-transform hover:scale-[1.02]"
+                className="max-w-[848px] bg-white rounded-lg shadow-sm p-6 transition-transform hover:scale-[1.02]"
               >
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-3">
+                  <div className="max-w-[82%]">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-3 break-words">
                       {post.title}
                     </h2>
-                    <p className="text-gray-600 mb-4">{post.content}</p>
+                    <p className="text-gray-600 mb-4 break-words">
+                      {post.content}
+                    </p>
                     <time className="text-sm text-gray-400">
                       {new Date(post.created_at).toLocaleDateString("en-US", {
                         year: "numeric",
@@ -166,7 +168,7 @@ export default function FilterPosts() {
                       })}
                     </time>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 flex-shrink-0">
                     <button
                       onClick={() => handleEdit(post.id)}
                       className="text-blue-500 hover:text-blue-700"

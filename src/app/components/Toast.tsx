@@ -20,7 +20,7 @@ export default function Toast({
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-      setTimeout(onClose, 300); // Allow time for exit animation
+      setTimeout(onClose, 300);
     }, duration);
     
     return () => clearTimeout(timer);
@@ -32,7 +32,6 @@ export default function Toast({
     info: "bg-blue-500"
   }[type];
 
-  // Inline animation styles
   const animationStyles = {
     opacity: isVisible ? 1 : 0,
     transform: isVisible ? 'translateX(0)' : 'translateX(20px)',

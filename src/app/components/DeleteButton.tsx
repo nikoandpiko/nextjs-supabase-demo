@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
+import Toast from "./Toast";
 
 export default function DeleteButton({
   postId,
@@ -13,6 +14,11 @@ export default function DeleteButton({
 }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [toast, setToast] = useState<{show: boolean, message: string, type: 'success'|'error'}>({
+    show: false,
+    message: "",
+    type: "success"
+  });
   const router = useRouter();
 
   const supabase = createBrowserClient(
@@ -23,19 +29,47 @@ export default function DeleteButton({
   async function handleDelete() {
     setIsDeleting(true);
     try {
-      await supabase.from("posts").delete().eq("id", postId);
-      onDelete(postId); // This triggers the toast in the parent component
+      const { error } = await supabase.from("posts").delete().eq("id", postId);
+      
+      if (error) throw error;
+      
+      onDelete(postId);
       router.refresh();
     } catch (error) {
       console.error(error);
+      let errorMessage = "An unknown error occurred";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === "object" && error !== null && "message" in error) {
+        errorMessage = (error as { message: string }).message;
+      }
+      
+      setToast({
+        show: true,
+        message: `Error: ${errorMessage}`,
+        type: "error"
+      });
     } finally {
       setIsDeleting(false);
       setShowConfirm(false);
     }
   }
+  
+  function handleToastClose() {
+    setToast(prev => ({ ...prev, show: false }));
+  }
 
   return (
     <div className="relative">
+      {toast.show && (
+        <Toast 
+          message={toast.message}
+          type={toast.type}
+          onClose={handleToastClose}
+        />
+      )}
+    
       <button
         onClick={() => setShowConfirm(true)}
         className="text-red-500 hover:text-red-700"

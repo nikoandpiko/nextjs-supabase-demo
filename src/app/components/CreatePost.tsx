@@ -64,7 +64,6 @@ export default function CreatePost() {
       if (error) throw error;
       if (data) addPost(data);
   
-      // Reset the form and show success toast
       setTitle("");
       setContent("");
       setToast({
