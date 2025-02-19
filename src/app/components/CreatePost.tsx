@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { useRouter } from "next/navigation";
 import { usePosts } from "../context/PostContext";
 
 const MAX_TITLE_LENGTH = 100;
@@ -14,7 +13,6 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({ title: "", content: "" });
-  const router = useRouter();
   const { addPost } = usePosts();
 
   const supabase = createBrowserClient(
@@ -49,7 +47,7 @@ export default function CreatePost() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     setIsSubmitting(true);
     try {
       const { data, error } = await supabase
@@ -57,20 +55,26 @@ export default function CreatePost() {
         .insert([{ title, content }])
         .select()
         .single();
-
+  
       if (error) throw error;
       if (data) addPost(data);
-
+  
       setTitle("");
       setContent("");
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error:", error.message);
+      } else if (typeof error === "object" && error !== null && "message" in error) {
+        console.error("Error:", (error as { message: string }).message);
+      } else {
+        console.error("An unknown error occurred");
+      }
     } finally {
       setIsSubmitting(false);
     }
-  }
+  }  
 
   return (
     <div className="relative">
@@ -125,7 +129,7 @@ export default function CreatePost() {
               }
             }}
             placeholder="Post content"
-            className={`w-full p-2 border rounded h-32 text-gray-800 placeholder-gray-400 ${
+            className={`w-full p-2 border rounded h-32 min-h-[42] text-gray-800 placeholder-gray-400 ${
               errors.content ? "border-red-500" : ""
             }`}
             disabled={isSubmitting}

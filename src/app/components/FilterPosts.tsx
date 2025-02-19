@@ -41,7 +41,7 @@ export default function FilterPosts() {
   };
 
   const sortPosts = (postsToSort: Post[], option: SortOption) => {
-    let sorted = [...postsToSort];
+    const sorted = [...postsToSort];
     switch (option) {
       case "newest":
         sorted.sort(
